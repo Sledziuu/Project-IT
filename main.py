@@ -1,4 +1,4 @@
-import pygame
+import pygame#gowno123
 import sys
 
 pygame.init()
