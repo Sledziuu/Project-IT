@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+#lol
 pygame.init()
 
 class Bloon:
@@ -10,15 +10,14 @@ class Bloon:
             self.health = 10
             self.speed = 5
         elif type == 2:
-            self.health = 20
-            self.speed = 5
+            pass
         elif type == 3:
-            self.health = 5
-            self.speed = 10
+            pass
         else:
             # Default values if type is not 1, 2, or 3
             self.health = 10
             self.speed = 5
+        self.sprite = pygame.image.load()
         self.pos = (0, 0)
 
     
