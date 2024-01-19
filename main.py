@@ -30,7 +30,6 @@ def checkQuit(event):
         pygame.quit()
         sys.exit()
 
-
 #setup vaules
 screen_width = 1000
 screen_height = 500
@@ -72,14 +71,14 @@ targets = {
 #background = pygame.image.load("background.png")
 
 #starting game state
-state = "welcome"
+state = "game"
 
 
 
 #main loop
 while True:
     
-    if state == 'welcome':
+    if state == 'game':
         #screen.blit(background, (0,0))
         screen.fill('chocolate')
         pygame.draw.lines(screen, 'black', False, path)
