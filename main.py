@@ -59,7 +59,6 @@ class Turret:
         self.angle = 0
         self.target = 0
 
-    
 def createQueue():
     global bloonQueue
     for i in range(0,len(queue)):
@@ -171,9 +170,37 @@ def turretShoot():
         #print(bloonQueue[turretList[i].target].pos[0]-turretList[i].pos[0], bloonQueue[turretList[i].target].pos[1]-turretList[i].pos[1])
         #print(turretList[i].angle)
 
-    
+#health "bar" and game over screen
+def health():
+    #initial image positions
+    heart1 = pygame.image.load('heart.png')
+    heart2 = pygame.image.load('heart.png')
+    heart3 = pygame.image.load('heart.png')
+    game_over = pygame.image.load('game_over.png')
+    heart1_rect = heart1.get_rect()
+    heart2_rect = heart2.get_rect()
+    heart3_rect = heart3.get_rect()
+    game_over_rect=game_over.get_rect()
+    heart1_rect.center = (800, 20)
+    heart2_rect.center = (850, 20)
+    heart3_rect.center = (900, 20)
+    game_over_rect.center = (-1000, -1000)
 
-        
+#removing hearts when baloon makes it to the end with game over screen when all hearts are gone
+    for i in range(0, len(bloonQueue)):
+        if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart1_rect.center != (-800,-20):
+            heart1_rect.center = (-800,-20)
+        elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart2_rect.center != (-850, -20):
+            heart2_rect.center = (-850, -20)
+        elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart3_rect.center != (-900, -20):
+            heart3_rect.center = (-900, -20)
+            game_over_rect.center = (500, 250)
+    screen.blit(heart1, heart1_rect)
+    screen.blit(heart2, heart2_rect)
+    screen.blit(heart3, heart3_rect)
+    screen.blit(game_over, game_over_rect)
+
+
 
 def checkQuit(event):
     #checks if the quit button has been pressed
@@ -236,6 +263,7 @@ while True:
         bloonMove()
         drawTurrets(turType)
         turretShoot()
+        health()
         for event in pygame.event.get():
             createTurret(turType, event)
             checkQuit(event)
