@@ -187,17 +187,18 @@ def turretShoot():
 #health "bar" and game over screen
 def health():
     #initial image positions
-    heart1 = pygame.image.load('./textures/heart.png')
-    heart2 = pygame.image.load('./textures/heart.png')
-    heart3 = pygame.image.load('./textures/heart.png')
+    heart1 = pygame.image.load('./textures/tyskie.png')
+    heart2 = pygame.image.load('./textures/tyskie.png')
+    heart3 = pygame.image.load('./textures/tyskie.png')
     game_over = pygame.image.load('game_over.png')
+    hud = pygame.image.load('hud.png')
     heart1_rect = heart1.get_rect()
     heart2_rect = heart2.get_rect()
     heart3_rect = heart3.get_rect()
     game_over_rect=game_over.get_rect()
-    heart1_rect.center = (800, 20)
-    heart2_rect.center = (850, 20)
-    heart3_rect.center = (900, 20)
+    heart1_rect.center = (910, 100)
+    heart2_rect.center = (860, 100)
+    heart3_rect.center = (810, 100)
     game_over_rect.center = (-1000, -1000)
 
 #removing hearts when baloon makes it to the end with game over screen when all hearts are gone
@@ -209,12 +210,25 @@ def health():
         elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart3_rect.center != (-900, -20):
             heart3_rect.center = (-900, -20)
             game_over_rect.center = (500, 250)
+    screen.blit(hud, (775, 0))
     screen.blit(heart1, heart1_rect)
     screen.blit(heart2, heart2_rect)
     screen.blit(heart3, heart3_rect)
     screen.blit(game_over, game_over_rect)
 
 
+def drawPause():
+    pygame.draw.rect(surface,(128,128,128,150),[0,0,1000,500])
+    screen.blit(surface,(0,0))
+
+#To gowno nie dziala jak wstawiam do petli for event
+# def checkPause(event,pause):
+#     if event.type == pygame.KEYDOWN:
+#         if event.key == pygame.K_ESCAPE:
+#             if pause:
+#                 pause = False
+#             else:
+#                 pause = True
 
 def checkQuit(event):
     #checks if the quit button has been pressed
@@ -234,6 +248,8 @@ turretList = []
 
 #setup
 screen = pygame.display.set_mode((screen_width, screen_height))
+#setup of this transparent screen which appears when pause is True
+surface = pygame.Surface((screen_width,screen_height),pygame.SRCALPHA)
 pygame.display.set_caption('Bloons TD 7')
 #pygame.display.set_icon(pygame.image.load("panda.png"))
 
@@ -264,7 +280,8 @@ queue = "212112121222"
 #starting game state
 state = "game"
 turType = 1
-
+#starting pause state
+pause = False
 
 createQueue()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -276,14 +293,26 @@ while True:
         #screen.blit(background, (0,0))
         screen.fill('chocolate')
         pygame.draw.lines(screen, 'black', False, path)
-        bloonMove()
-        drawTurrets(turType)
-        turretShoot()
+        #When pause = False, everything as regular
+        if not pause:
+            bloonMove()
+            drawTurrets(turType)
+            turretShoot()
         health()
         for event in pygame.event.get():
             createTurret(turType, event)
             checkQuit(event)
-
+            #KURWA nie dziala jak zrobilem funkcje checkPause(event,pause) wiec wrzucam tak
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    if pause:
+                        pause = False
+                    else:
+                        pause = True
+        #Pause screen
+        if pause == True:
+            drawPause()
+            screen.blit(pygame.image.load('pause.png'),(0,0))
     fpsClock.tick(fps)
     pygame.display.update()
     
