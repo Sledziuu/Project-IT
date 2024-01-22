@@ -14,7 +14,7 @@ class Bloon:
             self.speed = 2
             self.sprite = pygame.image.load("./textures/balloon1.png")
         elif type == 2:
-            self.health = 0
+            self.health = 5
             self.speed = 4
             self.sprite = pygame.image.load("./textures/balloon2.png")
         elif type == 3:
@@ -37,7 +37,7 @@ class Turret:
         if type == 1:
             self.damage = 3
             self.range = 100
-            self.speed = 4
+            self.speed = 1
             self.sprite = pygame.image.load("./textures/turret1.png")
         elif type == 2:
             self.damage = 3
@@ -56,6 +56,7 @@ class Turret:
         self.rect = self.sprite.get_rect()
         self.pos = pos
         self.rect.center = self.pos
+        self.timer = 0
         self.angle = 0
         self.target = 0
 
@@ -147,10 +148,19 @@ def drawTurrets(turType):
         tmpIcon = pygame.transform.rotate(turretList[i].sprite, turretList[i].angle)
         screen.blit(tmpIcon, tmpIcon.get_rect(center = turretList[i].rect.center))
 
+def shootAnimation(i, currentTime, turTime):
+    tmpRECT = pygame.image.load("./textures/fire.png").get_rect()
+    trajectory = Vector2(bloonQueue[turretList[i].target].pos) - Vector2(turretList[i].pos)
+    
+    tmpRECT.center = turretList[i].pos + 50 * trajectory.normalize()
+    if (currentTime-turTime)/1000 < 1/4:
+        screen.blit(pygame.image.load("./textures/fire.png"), tmpRECT)
+
 def turretShoot():
     
     for i in range(0,len(turretList)):
         flagTMP = False
+        flagShoot = True
         xTur = turretList[i].pos[0]
         yTur = turretList[i].pos[1]
         for j in range(0, len(bloonQueue)): 
@@ -159,23 +169,27 @@ def turretShoot():
             if sqrt((xTur-xBloon)**2 + (yTur-yBloon)**2) <= turretList[i].range and bloonQueue[j].health > 0 and flagTMP == False:
                 flagTMP = True
                 turretList[i].target = j
-                #print(turretList[i].target)
-                #bloonQueue[j].health -= 2
-                #print(bloonQueue[j].health)
                 
         if sqrt((xTur-bloonQueue[turretList[i].target].pos[0])**2 + (yTur-bloonQueue[turretList[i].target].pos[1])**2) <= turretList[i].range \
                  and bloonQueue[turretList[i].target].health > 0:
             turretList[i].angle = (180 / math.pi) * math.atan2(bloonQueue[turretList[i].target].pos[0]-turretList[i].pos[0], bloonQueue[turretList[i].target].pos[1]-turretList[i].pos[1])
-        
+            if (pygame.time.get_ticks()-turretList[i].timer)/1000 > turretList[i].speed:
+                bloonQueue[turretList[i].target].health -= turretList[i].damage
+                turretList[i].timer = pygame.time.get_ticks()
+            shootAnimation(i, pygame.time.get_ticks(), turretList[i].timer)
+
+
+
+
         #print(bloonQueue[turretList[i].target].pos[0]-turretList[i].pos[0], bloonQueue[turretList[i].target].pos[1]-turretList[i].pos[1])
         #print(turretList[i].angle)
 
 #health "bar" and game over screen
 def health():
     #initial image positions
-    heart1 = pygame.image.load('heart.png')
-    heart2 = pygame.image.load('heart.png')
-    heart3 = pygame.image.load('heart.png')
+    heart1 = pygame.image.load('./textures/heart.png')
+    heart2 = pygame.image.load('./textures/heart.png')
+    heart3 = pygame.image.load('./textures/heart.png')
     game_over = pygame.image.load('game_over.png')
     heart1_rect = heart1.get_rect()
     heart2_rect = heart2.get_rect()
@@ -224,6 +238,7 @@ pygame.display.set_caption('Bloons TD 7')
 #pygame.display.set_icon(pygame.image.load("panda.png"))
 
 
+
 #setting the balloon path
 path = [
     (700, 0),
@@ -252,6 +267,7 @@ turType = 1
 
 
 createQueue()
+pygame.time.set_timer(pygame.USEREVENT, 1000)
 #print(bloonQueue[0].rect.h, bloonQueue[0].rect.w)
 
 #main loop
