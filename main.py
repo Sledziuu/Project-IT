@@ -30,7 +30,6 @@ class Bloon:
         self.rect.center = self.pos
         self.target = 1
 
-
 class Turret:
     def __init__(self, type, pos):
         self.type = type
@@ -60,33 +59,61 @@ class Turret:
         self.angle = 0
         self.target = 0
 
+class Button():
+    def __init__(self, x, y, image, scale):
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+        self.clicked = False
+    def draw(self):
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+        return action
+
 def createQueue():
     global bloonQueue
-    for i in range(0,len(queue)):
-            bloonQueue.append(Bloon(int(queue[i])))
+    for i in range(0,len(queueDict[level][wave])):
+            bloonQueue.append(Bloon(int(queueDict[level][wave][i])))
     for j in range(0, len(bloonQueue)):
         bloonQueue[j].pos[1] -= j * bloonQueue[j].rect.height
         bloonQueue[j].rect.center = bloonQueue[j].pos
 
 def bloonMove():
-    
-    
-    for i in range(0,len(bloonQueue)):
-        
-        #wayToTarget = Vector2([0,0]) --- residue
+    if startFlag:
+        for i in range(0,len(bloonQueue)):
+            
+            wayToTarget = Vector2(path[level][bloonQueue[i].target]) - Vector2(bloonQueue[i].pos)
+            if bloonQueue[i].health > 0:
+                if wayToTarget.length() <= bloonQueue[i].speed:
+                    bloonQueue[i].pos = path[level][bloonQueue[i].target]
+                    bloonQueue[i].rect.center = bloonQueue[i].pos
+                    bloonQueue[i].target += 1
 
-        wayToTarget = Vector2(path[bloonQueue[i].target]) - Vector2(bloonQueue[i].pos)
-        if bloonQueue[i].health > 0:
-            if wayToTarget.length() <= bloonQueue[i].speed:
-                bloonQueue[i].pos = path[bloonQueue[i].target]
+                
+                bloonQueue[i].pos += bloonQueue[i].speed * wayToTarget.normalize()
                 bloonQueue[i].rect.center = bloonQueue[i].pos
-                bloonQueue[i].target += 1
+                
+                screen.blit(bloonQueue[i].sprite, bloonQueue[i].rect)
 
-            
-            bloonQueue[i].pos += bloonQueue[i].speed * wayToTarget.normalize()
-            bloonQueue[i].rect.center = bloonQueue[i].pos
-            
-            screen.blit(bloonQueue[i].sprite, bloonQueue[i].rect)
+def checkDefeat():
+    global HPoints
+    global state
+    for i in range(0,len(bloonQueue)):
+        if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0:
+            bloonQueue[i].health = 0
+            HPoints -= 1
+
+    if HPoints <= 0:
+        state = 'main menu'
     
 def createTurret(turType, event):
     canPlace = True
@@ -96,11 +123,11 @@ def createTurret(turType, event):
     spriteWidth = sprite1.get_width()
     spriteHeight = sprite1.get_height()
 
-    for j in range(0, len(path)-1):
+    for j in range(0, len(path[level])-1):
         if pygame.Rect(mouseX - spriteWidth, \
                        mouseY - 2.5*spriteHeight/2, \
                        2*spriteWidth, \
-                       2.5*spriteHeight).clipline(path[j], path[j+1]) != ():
+                       2.5*spriteHeight).clipline(path[level][j], path[level][j+1]) != ():
             
             canPlace = False
 
@@ -111,6 +138,9 @@ def createTurret(turType, event):
                         4*spriteHeight).collidepoint(turretList[i].pos[0], turretList[i].pos[1]):
             
             canPlace = False
+    
+    if mouseX >= 775:
+        canPlace = False
 
     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and canPlace == True:
         mousePos = pygame.mouse.get_pos()
@@ -124,11 +154,11 @@ def drawTurrets(turType):
     spriteWidth = sprite1.get_width()
     spriteHeight = sprite1.get_height()
 
-    for j in range(0, len(path)-1):
+    for j in range(0, len(path[level])-1):
         if pygame.Rect(mouseX - spriteWidth, \
                        mouseY - 2.5*spriteHeight/2, \
                        2*spriteWidth, \
-                       2.5*spriteHeight).clipline(path[j], path[j+1]) != ():
+                       2.5*spriteHeight).clipline(path[level][j], path[level][j+1]) != ():
             canPlace = False
             #print("DOTYK")
 
@@ -139,6 +169,10 @@ def drawTurrets(turType):
                         4*spriteHeight).collidepoint(turretList[i].pos[0], turretList[i].pos[1]):
             
             canPlace = False
+
+    if mouseX >= 775:
+        canPlace = False
+
 
     if canPlace == True:
         if turType == 1:
@@ -177,54 +211,55 @@ def turretShoot():
                 turretList[i].timer = pygame.time.get_ticks()
             shootAnimation(i, pygame.time.get_ticks(), turretList[i].timer)
 
-
-
-
-        #print(bloonQueue[turretList[i].target].pos[0]-turretList[i].pos[0], bloonQueue[turretList[i].target].pos[1]-turretList[i].pos[1])
-       
+def showHP():
+    heart = pygame.image.load('./textures/tyskie.png')
+    heart_rect = heart.get_rect()
+    for i in range(0, HPoints):
+        heart_rect.center = (810 + i*50, 100)
+        screen.blit(pygame.image.load('./textures/tyskie.png'), heart_rect)
 
 #health "bar" and game over screen
-def health():
-    #initial image positions
-    heart1 = pygame.image.load('./textures/tyskie.png')
-    heart2 = pygame.image.load('./textures/tyskie.png')
-    heart3 = pygame.image.load('./textures/tyskie.png')
-    game_over = pygame.image.load('game_over.png')
-    hud = pygame.image.load('hud.png')
-    heart1_rect = heart1.get_rect()
-    heart2_rect = heart2.get_rect()
-    heart3_rect = heart3.get_rect()
-    game_over_rect=game_over.get_rect()
-    heart1_rect.center = (910, 100)
-    heart2_rect.center = (860, 100)
-    heart3_rect.center = (810, 100)
-    game_over_rect.center = (-1000, -1000)
+# def health():
+#     #initial image positions
+#     heart1 = pygame.image.load('./textures/tyskie.png')
+#     heart2 = pygame.image.load('./textures/tyskie.png')
+#     heart3 = pygame.image.load('./textures/tyskie.png')
+#     game_over = pygame.image.load('game_over.png')
+#     hud = pygame.image.load('./textures/hud.png')
+#     heart1_rect = heart1.get_rect()
+#     heart2_rect = heart2.get_rect()
+#     heart3_rect = heart3.get_rect()
+#     game_over_rect=game_over.get_rect()
+#     heart1_rect.center = (910, 100)
+#     heart2_rect.center = (860, 100)
+#     heart3_rect.center = (810, 100)
+#     game_over_rect.center = (-1000, -1000)
 
-#removing hearts when baloon makes it to the end with game over screen when all hearts are gone
-    for i in range(0, len(bloonQueue)):
-        if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart1_rect.center != (-800,-20):
-            heart1_rect.center = (-800,-20)
-        elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart2_rect.center != (-850, -20):
-            heart2_rect.center = (-850, -20)
-        elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart3_rect.center != (-900, -20):
-            heart3_rect.center = (-900, -20)
-            game_over_rect.center = (500, 250)
-    screen.blit(hud, (775, 0))
-    screen.blit(heart1, heart1_rect)
-    screen.blit(heart2, heart2_rect)
-    screen.blit(heart3, heart3_rect)
-    screen.blit(game_over, game_over_rect)
+# #removing hearts when baloon makes it to the end with game over screen when all hearts are gone
+#     for i in range(0, len(bloonQueue)):
+#         if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart1_rect.center != (-800,-20):
+#             heart1_rect.center = (-800,-20)
+#         elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart2_rect.center != (-850, -20):
+#             heart2_rect.center = (-850, -20)
+#         elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart3_rect.center != (-900, -20):
+#             heart3_rect.center = (-900, -20)
+#             game_over_rect.center = (500, 250)
+#     screen.blit(hud, (775, 0))
+#     screen.blit(heart1, heart1_rect)
+#     screen.blit(heart2, heart2_rect)
+#     screen.blit(heart3, heart3_rect)
+#     screen.blit(game_over, game_over_rect)
 
 
 def drawPause():
     pygame.draw.rect(surface,(128,128,128,150),[0,0,1000,500])
     screen.blit(surface,(0,0))
+    screen.blit(pygame.image.load('./textures/pause.png'),(0,0))
 
-#To gowno nie dziala jak wstawiam do petli for event
 def checkPause(event):
     global pause
     if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
+        if event.key == pygame.K_SPACE:
             if pause:
                 pause = False
             else:
@@ -242,6 +277,8 @@ screen_height = 500
 fpsClock = pygame.time.Clock()
 fps = 60
 
+
+#creation of lists of bloons and turrets
 bloonQueue = []
 turretList = []
 
@@ -257,7 +294,8 @@ pygame.display.set_caption('Bloons TD 7')
 
 
 #setting the balloon path
-path = [
+path = {
+    1:[
     (700, 0),
     (700, 100),
     (100, 100),
@@ -269,11 +307,20 @@ path = [
     (500, 400),
     (500, 500),
     (500, 100000)
-]
+    ]
+}
 
-#setting the balloon queue for the game
-queue = "22111111111"
-
+#setting the balloon queues for the game levels and waves
+queueDict = {
+    1:{
+        1:"121212111111",
+        2:"222222"
+    },
+    2:{
+        1:"121212111111",
+        2:"222222"
+    }
+}
 
 #load background image
 #background = pygame.image.load("background.png")
@@ -283,72 +330,58 @@ queue = "22111111111"
     
 #font = pygame.font.SysFont("Arial", 40)
 #text_col = (255, 255, 255)
+
+
 #starting game state
 state = "main menu"
-play_img = pygame.image.load('./textures/play.gif').convert_alpha()
-exit_img = pygame.image.load('./textures/exit.gif').convert_alpha() 
-#state = "game"
+
+#global variables in control of gameplay
+HPoints = 3
 turType = 1
+wave = 1
+level = 1
 
 #starting pause state
 pause = False
 
-createQueue()
-pygame.time.set_timer(pygame.USEREVENT, 1000)
-#print(bloonQueue[0].rect.h, bloonQueue[0].rect.w)
+#starting queue flag state
+queueFlag = False
+
+#starting start flag state
+startFlag = True
 
 
-#button class
-class Button():
-    def __init__(self, x, y, image, scale):
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
-        self.clicked = False
-    def draw(self):
-        action = False
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = True
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-        screen.blit(self.image, (self.rect.x, self.rect.y))
-        return action
-    
-start_button = Button(350, 50, play_img, 0.7 )
-exit_button = Button(320, 350, exit_img, 0.7 )
+start_button = Button(350, 50, pygame.image.load('./textures/play.gif').convert_alpha(), 0.7 )
+exit_button = Button(320, 350, pygame.image.load('./textures/exit.gif').convert_alpha(), 0.7 )
+
 #main loop
 while True:
+
     if state == 'game':
+        if not queueFlag:
+            createQueue()
+            queueFlag = True
         #screen.blit(background, (0,0))
         screen.fill('chocolate')
-        pygame.draw.lines(screen, 'black', False, path)
+        pygame.draw.lines(screen, 'black', False, path[level])
         #When pause = False, everything as regular
         if not pause:
             bloonMove()
             drawTurrets(turType)
             turretShoot()
 
-        if pause == True:
+        if pause:
             drawPause()
-            screen.blit(pygame.image.load('pause.png'),(0,0))
+            
 
-        health()
+        showHP()
+        checkDefeat()
         for event in pygame.event.get():
             createTurret(turType, event)
             checkQuit(event)
             checkPause(event)
-            #KURWA nie dziala jak zrobilem funkcje checkPause(event,pause) wiec wrzucam tak
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    if pause:
-                        pause = False
-                    else:
-                        pause = True
+
+
     if state == 'main menu':
         screen.fill((202, 228, 241))
             
@@ -358,13 +391,18 @@ while True:
             pygame.quit()
             sys.exit()
         for event in pygame.event.get():
-            createTurret(turType, event)
             checkQuit(event)
-            checkPause(event)
-        #Pause screen
-        if pause == True:
-            drawPause()
-            screen.blit(pygame.image.load('pause.png'),(0,0))
+
+    if state == 'game over':
+        screen.fill((202, 228, 241))
+            
+        if start_button.draw():
+            state = "game"
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        for event in pygame.event.get():
+            checkQuit(event)
     fpsClock.tick(fps)
     pygame.display.update()
     
