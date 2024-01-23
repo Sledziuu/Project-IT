@@ -140,7 +140,7 @@ def createTurret(turType, event):
     if money < cost[turType]:
         canPlace = False
 
-    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and canPlace == True:
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and canPlace == True and turType!=0:
         mousePos = pygame.mouse.get_pos()
         turretList.append(Turret(turType, mousePos))
         money -= cost[turType]
@@ -222,23 +222,25 @@ def showSideMenu():
 
     screen.blit(pygame.image.load('./textures/hud.png'), (775, 0))
     for i in range(0, HPoints):
-        heart_rect.center = (810 + i*50, 100)
-        screen.blit(pygame.image.load('./textures/tyskie.png'), heart_rect)
+        heart_rect.center = (820 + i*50, 170)
+        screen.blit(pygame.image.load('./textures/heart.png'), heart_rect)
 
     moneyImg = font.render(str(money), True, text_col)
     moneyRect = moneyImg.get_rect()
-    moneyRect.center = (810, 200)
+    moneyRect.center = (920, 75)
     screen.blit(moneyImg, moneyRect)
 
     waveImg = font.render('{}/{}'.format(str(wave), len(queueDict[level])), True, text_col)
     waveRect = waveImg.get_rect()
-    waveRect.center = (810, 10)
+    waveRect.center = (900, 30)
     screen.blit(waveImg, waveRect)
 
     if turret1_button.draw():
         turType = 1
     if turret2_button.draw():
         turType = 2
+    if turretCancel_button.draw():
+        turType = 0
 
 def checkWin():
     global money
@@ -272,38 +274,6 @@ def checkDefeat():
     if HPoints <= 0:
         state = 'main menu'
 
-#health "bar" and game over screen
-# def health():
-#     #initial image positions
-#     heart1 = pygame.image.load('./textures/tyskie.png')
-#     heart2 = pygame.image.load('./textures/tyskie.png')
-#     heart3 = pygame.image.load('./textures/tyskie.png')
-#     game_over = pygame.image.load('game_over.png')
-#     hud = pygame.image.load('./textures/hud.png')
-#     heart1_rect = heart1.get_rect()
-#     heart2_rect = heart2.get_rect()
-#     heart3_rect = heart3.get_rect()
-#     game_over_rect=game_over.get_rect()
-#     heart1_rect.center = (910, 100)
-#     heart2_rect.center = (860, 100)
-#     heart3_rect.center = (810, 100)
-#     game_over_rect.center = (-1000, -1000)
-
-# #removing hearts when baloon makes it to the end with game over screen when all hearts are gone
-#     for i in range(0, len(bloonQueue)):
-#         if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart1_rect.center != (-800,-20):
-#             heart1_rect.center = (-800,-20)
-#         elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart2_rect.center != (-850, -20):
-#             heart2_rect.center = (-850, -20)
-#         elif bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0 and heart3_rect.center != (-900, -20):
-#             heart3_rect.center = (-900, -20)
-#             game_over_rect.center = (500, 250)
-#     screen.blit(hud, (775, 0))
-#     screen.blit(heart1, heart1_rect)
-#     screen.blit(heart2, heart2_rect)
-#     screen.blit(heart3, heart3_rect)
-#     screen.blit(game_over, game_over_rect)
-
 
 def drawPause():
     pygame.draw.rect(surface,(128,128,128,150),[0,0,1000,500])
@@ -336,7 +306,7 @@ def restart():
 
     HPoints = 3
     money = 100
-    turType = 1
+    turType = 0
     wave = 1
     level = 1
     bloonQueue = []
@@ -361,7 +331,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 surface = pygame.Surface((screen_width,screen_height),pygame.SRCALPHA)
 
 pygame.display.set_caption('Bloons TD 7')
-#pygame.display.set_icon(pygame.image.load("panda.png"))
+pygame.display.set_icon(pygame.image.load("./textures/balloon1.png"))
 
 
 
@@ -397,6 +367,7 @@ queueDict = {
 
 #setting turret costs
 cost = {
+    0:0,
     1:30,
     2:40
 }
@@ -406,12 +377,12 @@ background = pygame.image.load("./textures/background.png")
 
 
 #starting game state
-state = "main menu"
+state = "game"
 
 #global variables in control of gameplay
 HPoints = 3
 money = 100
-turType = 1
+turType = 0
 wave = 1
 level = 1
 
@@ -431,6 +402,7 @@ start_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_
 exit_button = Button(320, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
 turret1_button = Button(810, 250, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
 turret2_button = Button(810, 300, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
+turretCancel_button = Button(810, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
 
 
 #main loop
