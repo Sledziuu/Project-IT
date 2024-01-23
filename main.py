@@ -12,17 +12,20 @@ class Bloon:
         if type == 1:
             self.health = 10
             self.speed = 2
+            self.prize = 10
             self.sprite = pygame.image.load("./textures/balloon1.png")
         elif type == 2:
             self.health = 5
             self.speed = 4
+            self.prize = 15
             self.sprite = pygame.image.load("./textures/balloon2.png")
         elif type == 3:
             pass
         else:
             # Default values if type is not 1, 2, or 3
             self.health = 10
-            self.speed = 5
+            self.speed = 2
+            self.prize = 10
             self.sprite = pygame.image.load("./textures/balloon1.png")
 
         self.rect = self.sprite.get_rect()
@@ -39,17 +42,17 @@ class Turret:
             self.speed = 1
             self.sprite = pygame.image.load("./textures/turret1.png")
         elif type == 2:
-            self.damage = 3
+            self.damage = 4
             self.range = 100
-            self.speed = 5
-            self.sprite = pygame.image.load("./textures/turret1.png")
+            self.speed = 3
+            self.sprite = pygame.image.load("./textures/turret2.png")
         elif type == 3:
             pass
         else:
             # Default values if type is not 1, 2, or 3
             self.damage = 3
-            self.range = 50
-            self.speed = 5
+            self.range = 100
+            self.speed = 1
             self.sprite = pygame.image.load("./textures/turret1.png")
 
         self.rect = self.sprite.get_rect()
@@ -65,7 +68,7 @@ class Button():
         height = image.get_height()
         self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
+        self.rect.center = (x,y)
         self.clicked = False
     def draw(self):
         action = False
@@ -104,18 +107,10 @@ def bloonMove():
                 
                 screen.blit(bloonQueue[i].sprite, bloonQueue[i].rect)
 
-def checkDefeat():
-    global HPoints
-    global state
-    for i in range(0,len(bloonQueue)):
-        if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0:
-            bloonQueue[i].health = 0
-            HPoints -= 1
 
-    if HPoints <= 0:
-        state = 'main menu'
     
 def createTurret(turType, event):
+    global money
     canPlace = True
     sprite1 = pygame.image.load("./textures/turret1.png")
     mouseX = pygame.mouse.get_pos()[0]
@@ -142,13 +137,18 @@ def createTurret(turType, event):
     if mouseX >= 775:
         canPlace = False
 
+    if money < cost[turType]:
+        canPlace = False
+
     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and canPlace == True:
         mousePos = pygame.mouse.get_pos()
         turretList.append(Turret(turType, mousePos))
+        money -= cost[turType]
 
 def drawTurrets(turType):
     canPlace = True
     sprite1 = pygame.image.load("./textures/turret1.png")
+    sprite2 = pygame.image.load("./textures/turret2.png")
     mouseX = pygame.mouse.get_pos()[0]
     mouseY = pygame.mouse.get_pos()[1]
     spriteWidth = sprite1.get_width()
@@ -173,10 +173,14 @@ def drawTurrets(turType):
     if mouseX >= 775:
         canPlace = False
 
+    if money < cost[turType]:
+        canPlace = False
 
     if canPlace == True:
         if turType == 1:
             screen.blit((sprite1),(mouseX - 1/2 * sprite1.get_width(), mouseY - 1/2 * sprite1.get_height()))
+        if turType == 2:
+            screen.blit((sprite2),(mouseX - 1/2 * sprite2.get_width(), mouseY - 1/2 * sprite2.get_height()))
 
     for i in range(0, len(turretList)):
         tmpIcon = pygame.transform.rotate(turretList[i].sprite, turretList[i].angle)
@@ -211,12 +215,62 @@ def turretShoot():
                 turretList[i].timer = pygame.time.get_ticks()
             shootAnimation(i, pygame.time.get_ticks(), turretList[i].timer)
 
-def showHP():
+def showSideMenu():
+    global turType
     heart = pygame.image.load('./textures/tyskie.png')
     heart_rect = heart.get_rect()
+
+    screen.blit(pygame.image.load('./textures/hud.png'), (775, 0))
     for i in range(0, HPoints):
         heart_rect.center = (810 + i*50, 100)
         screen.blit(pygame.image.load('./textures/tyskie.png'), heart_rect)
+
+    moneyImg = font.render(str(money), True, text_col)
+    moneyRect = moneyImg.get_rect()
+    moneyRect.center = (810, 200)
+    screen.blit(moneyImg, moneyRect)
+
+    waveImg = font.render('{}/{}'.format(str(wave), len(queueDict[level])), True, text_col)
+    waveRect = waveImg.get_rect()
+    waveRect.center = (810, 10)
+    screen.blit(waveImg, waveRect)
+
+    if turret1_button.draw():
+        turType = 1
+    if turret2_button.draw():
+        turType = 2
+
+def checkWin():
+    global money
+    global queueFlag
+    global wave
+    global state
+    queueFlag = False
+    for i in range(0, len(bloonQueue)):
+        if bloonQueue[i].health <= 0 and bloonQueue[i].prize != 0:
+            money += bloonQueue[i].prize
+            bloonQueue[i].prize = 0
+
+        if bloonQueue[i].health > 0:
+            queueFlag = True
+        
+    if queueFlag == False and wave<len(queueDict[level]):
+        wave += 1
+    elif queueFlag == False and wave==len(queueDict[level]):
+        state = 'win'
+
+def checkDefeat():
+    global HPoints
+    global state
+    for i in range(0,len(bloonQueue)):
+        if bloonQueue[i].pos[1] > 550 and bloonQueue[i].health > 0:
+            bloonQueue[i].health = 0
+            bloonQueue[i].prize = 0
+            HPoints -= 1
+
+
+    if HPoints <= 0:
+        state = 'main menu'
 
 #health "bar" and game over screen
 # def health():
@@ -271,12 +325,30 @@ def checkQuit(event):
         pygame.quit()
         sys.exit()
 
+def restart():
+    global HPoints
+    global money
+    global turType
+    global wave
+    global level
+    global bloonQueue
+    global turretList
+
+    HPoints = 3
+    money = 100
+    turType = 1
+    wave = 1
+    level = 1
+    bloonQueue = []
+    turretList = []
+
 #setup vaules
 screen_width = 1000
 screen_height = 500
 fpsClock = pygame.time.Clock()
 fps = 60
-
+font = pygame.font.SysFont("Arial", 40)
+text_col = (0, 0, 0)
 
 #creation of lists of bloons and turrets
 bloonQueue = []
@@ -313,8 +385,8 @@ path = {
 #setting the balloon queues for the game levels and waves
 queueDict = {
     1:{
-        1:"121212111111",
-        2:"222222"
+        1:"111",
+        2:"2111"
     },
     2:{
         1:"121212111111",
@@ -322,14 +394,15 @@ queueDict = {
     }
 }
 
-#load background image
-#background = pygame.image.load("background.png")
 
-#img = font.render(text, True, text_col)
-#screen.blit(img,(x, y))
-    
-#font = pygame.font.SysFont("Arial", 40)
-#text_col = (255, 255, 255)
+#setting turret costs
+cost = {
+    1:30,
+    2:40
+}
+
+#load background image
+background = pygame.image.load("./textures/background.png")
 
 
 #starting game state
@@ -337,9 +410,12 @@ state = "main menu"
 
 #global variables in control of gameplay
 HPoints = 3
+money = 100
 turType = 1
 wave = 1
 level = 1
+
+
 
 #starting pause state
 pause = False
@@ -351,8 +427,11 @@ queueFlag = False
 startFlag = True
 
 
-start_button = Button(350, 50, pygame.image.load('./textures/play.gif').convert_alpha(), 0.7 )
-exit_button = Button(320, 350, pygame.image.load('./textures/exit.gif').convert_alpha(), 0.7 )
+start_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exit_button = Button(320, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+turret1_button = Button(810, 250, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
+turret2_button = Button(810, 300, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
+
 
 #main loop
 while True:
@@ -361,9 +440,9 @@ while True:
         if not queueFlag:
             createQueue()
             queueFlag = True
-        #screen.blit(background, (0,0))
-        screen.fill('chocolate')
-        pygame.draw.lines(screen, 'black', False, path[level])
+        screen.blit(background, (0,0))
+        #screen.fill('chocolate')
+        #pygame.draw.lines(screen, 'black', False, path[level])
         #When pause = False, everything as regular
         if not pause:
             bloonMove()
@@ -374,30 +453,45 @@ while True:
             drawPause()
             
 
-        showHP()
+        showSideMenu()
         checkDefeat()
+        checkWin()
         for event in pygame.event.get():
             createTurret(turType, event)
             checkQuit(event)
             checkPause(event)
 
 
-    if state == 'main menu':
+    elif state == 'main menu':
         screen.fill((202, 228, 241))
             
         if start_button.draw():
             state = "game"
+            restart()
         if exit_button.draw():
             pygame.quit()
             sys.exit()
         for event in pygame.event.get():
             checkQuit(event)
 
-    if state == 'game over':
+    elif state == 'game over':
         screen.fill((202, 228, 241))
             
         if start_button.draw():
             state = "game"
+            restart()
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        for event in pygame.event.get():
+            checkQuit(event)
+    
+    elif state == 'win':
+        screen.fill((202, 228, 241))
+            
+        if start_button.draw():
+            state = "game"
+            restart()
         if exit_button.draw():
             pygame.quit()
             sys.exit()
