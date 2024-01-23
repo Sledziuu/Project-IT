@@ -142,13 +142,12 @@ def createTurret(turType, event):
         money -= cost[turType]
 
 def drawTurrets(turType):
+
     canPlace = True
-    sprite1 = pygame.image.load("./textures/turret1.png")
-    sprite2 = pygame.image.load("./textures/turret2.png")
     mouseX = pygame.mouse.get_pos()[0]
     mouseY = pygame.mouse.get_pos()[1]
-    spriteWidth = sprite1.get_width()
-    spriteHeight = sprite1.get_height()
+    spriteWidth = 50
+    spriteHeight = 50
 
     for j in range(0, len(path[level])-1):
         if pygame.Rect(mouseX - spriteWidth, \
@@ -156,7 +155,6 @@ def drawTurrets(turType):
                        2*spriteWidth, \
                        2.5*spriteHeight).clipline(path[level][j], path[level][j+1]) != ():
             canPlace = False
-            #print("DOTYK")
 
     for i in range(0,len(turretList)):
         if pygame.Rect(mouseX - 2*spriteWidth, \
@@ -166,18 +164,23 @@ def drawTurrets(turType):
             
             canPlace = False
 
-    if mouseX >= 775:
+    if mouseX >= 775 or money < cost[turType]:
         canPlace = False
 
-    if money < cost[turType]:
-        canPlace = False
+    #draw turret preview on mouse position
+    if turType == 1 and canPlace == True:
+        sprite = pygame.image.load("./textures/turret1.png")
+    elif turType == 2 and canPlace == True:
+        sprite = pygame.image.load("./textures/turret2.png")
+    elif turType == 1 and canPlace == False:
+        sprite = pygame.image.load("./textures/turret1_red.png")
+    elif turType == 2 and canPlace == False:
+        sprite = pygame.image.load("./textures/turret2_red.png")
 
-    if canPlace == True:
-        if turType == 1:
-            screen.blit((sprite1),(mouseX - 1/2 * sprite1.get_width(), mouseY - 1/2 * sprite1.get_height()))
-        if turType == 2:
-            screen.blit((sprite2),(mouseX - 1/2 * sprite2.get_width(), mouseY - 1/2 * sprite2.get_height()))
+    if turType != 0:
+        screen.blit((sprite),(mouseX - 1/2 * spriteWidth, mouseY - 1/2 * spriteHeight))
 
+    #draw placed turrets
     for i in range(0, len(turretList)):
         tmpIcon = pygame.transform.rotate(turretList[i].sprite, turretList[i].angle)
         screen.blit(tmpIcon, tmpIcon.get_rect(center = turretList[i].rect.center))
