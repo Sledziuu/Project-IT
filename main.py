@@ -395,9 +395,9 @@ queueFlag = False
 startFlag = True
 
 #main menu buttons
-start_button = Button(500, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
-exit_button = Button(500, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
-settings_button = Button(500, 185, pygame.image.load('./textures/option.gif').convert_alpha(), 0.7)
+start_button = Button(500, 200, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exit_button = Button(500, 400, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+settings_button = Button(500, 300, pygame.image.load('./textures/option.gif').convert_alpha(), 0.7)
 #settings button
 back_button = Button(350, 350, pygame.image.load('./textures/back.gif').convert_alpha(), 0.7)
 #in game buttons
@@ -405,8 +405,8 @@ turret1_button = Button(887, 270, pygame.image.load('./textures/turretButton1.pn
 turret2_button = Button(887, 350, pygame.image.load('./textures/turretButton2.png').convert_alpha(), 1 )
 turretCancel_button = Button(887, 430, pygame.image.load('./textures/turretButtonCancel.png').convert_alpha(), 1 )
 #win/lose buttons
-retry_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
-exitWL_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+retry_button = Button(250, 300, pygame.image.load('./textures/retry.png').convert_alpha(), 1 )
+exitWL_button = Button(500, 300, pygame.image.load('./textures/BackMainMenu.png').convert_alpha(), 1 )
 
 
 
@@ -450,9 +450,9 @@ while True:
             
         if start_button.draw():
             state = "game"
+            restart()
         if settings_button.draw():
             state = 'settings'
-            restart()
         if exit_button.draw():
             pygame.quit()
             sys.exit()
@@ -475,12 +475,11 @@ while True:
         screen.blit(background, (0,0))
         screen.blit(pygame.image.load(('./textures/congratulations.png')), (132,150))
         showSideMenu()
-        if start_button.draw():
+        if retry_button.draw():
             state = "game"
             restart()
-        if exit_button.draw():
-            pygame.quit()
-            sys.exit()
+        if exitWL_button.draw():
+            state = "main menu"
         
         for event in pygame.event.get():
             checkQuit(event)
