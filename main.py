@@ -349,6 +349,18 @@ while True:
                         pause = False
                     else:
                         pause = True
+    if state == 'main menu':
+        screen.fill((202, 228, 241))
+            
+        if start_button.draw():
+            state = "game"
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        for event in pygame.event.get():
+            createTurret(turType, event)
+            checkQuit(event)
+            checkPause(event)
         #Pause screen
         if pause == True:
             drawPause()
