@@ -42,12 +42,10 @@ class Turret:
             self.speed = 1
             self.sprite = pygame.image.load("./textures/turret1.png")
         elif type == 2:
-            self.damage = 4
-            self.range = 100
-            self.speed = 3
+            self.damage = 5
+            self.range = 150
+            self.speed = 0.5
             self.sprite = pygame.image.load("./textures/turret2.png")
-        elif type == 3:
-            pass
         else:
             # Default values if type is not 1, 2, or 3
             self.damage = 3
@@ -107,8 +105,6 @@ def bloonMove():
                 
                 screen.blit(bloonQueue[i].sprite, bloonQueue[i].rect)
 
-
-    
 def createTurret(turType, event):
     global money
     canPlace = True
@@ -195,7 +191,6 @@ def shootAnimation(i, currentTime, turTime):
         screen.blit(pygame.image.load("./textures/fire.png"), tmpRECT)
 
 def turretShoot():
-    
     for i in range(0,len(turretList)):
         flagTMP = False
         xTur = turretList[i].pos[0]
@@ -274,7 +269,6 @@ def checkDefeat():
     if HPoints <= 0:
         state = 'main menu'
 
-
 def drawPause():
     pygame.draw.rect(surface,(128,128,128,150),[0,0,1000,500])
     screen.blit(surface,(0,0))
@@ -330,6 +324,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 #setup of this transparent screen which appears when pause is True
 surface = pygame.Surface((screen_width,screen_height),pygame.SRCALPHA)
 
+#set window name and icon
 pygame.display.set_caption('Bloons TD 7')
 pygame.display.set_icon(pygame.image.load("./textures/balloon1.png"))
 
@@ -355,7 +350,7 @@ path = {
 #setting the balloon queues for the game levels and waves
 queueDict = {
     1:{
-        1:"111",
+        1:"111111111111",
         2:"2111"
     },
     2:{
@@ -369,7 +364,7 @@ queueDict = {
 cost = {
     0:0,
     1:30,
-    2:40
+    2:50
 }
 
 #load background image
@@ -378,12 +373,9 @@ background = pygame.image.load("./textures/background.png")
 
 #starting game state
 state = "main menu"
-play_img = pygame.image.load('./textures/play.png').convert_alpha()
 set_img = pygame.image.load('./textures/option.gif').convert_alpha()
-exit_img = pygame.image.load('./textures/exit.png').convert_alpha()
 but_img = pygame.image.load('./textures/back.gif').convert_alpha()
-#state = "game"
-state = "game"
+
 
 #global variables in control of gameplay
 HPoints = 3
@@ -391,7 +383,6 @@ money = 100
 turType = 0
 wave = 1
 level = 1
-
 
 
 #starting pause state
@@ -406,36 +397,13 @@ startFlag = True
 
 start_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
 exit_button = Button(320, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
-turret1_button = Button(810, 250, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
-turret2_button = Button(810, 300, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
-turretCancel_button = Button(810, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
+turret1_button = Button(887, 270, pygame.image.load('./textures/turretButton1.png').convert_alpha(), 1 )
+turret2_button = Button(887, 350, pygame.image.load('./textures/turretButton2.png').convert_alpha(), 1 )
+turretCancel_button = Button(887, 430, pygame.image.load('./textures/turretButtonCancel.png').convert_alpha(), 1 )
 
-
-#button class
-class Button():
-    def __init__(self, x, y, image, scale):
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
-        self.clicked = False
-    def draw(self):
-        action = False
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = True
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-        screen.blit(self.image, (self.rect.x, self.rect.y))
-        return action
-    
-start_button = Button(350, 50, play_img, 0.7 )
 settings_button = Button(370, 185, set_img, 0.7)
-exit_button = Button(320, 350, exit_img, 0.7 )
 back_button = Button(350, 350, but_img, 0.7)
+
 #main loop
 while True:
 
@@ -444,7 +412,6 @@ while True:
             createQueue()
             queueFlag = True
         screen.blit(background, (0,0))
-        #screen.fill('chocolate')
         #pygame.draw.lines(screen, 'black', False, path[level])
         #When pause = False, everything as regular
         if not pause:
@@ -514,6 +481,7 @@ while True:
         if pause == True:
             drawPause()
             screen.blit(pygame.image.load('pause.png'),(0,0))
+            
     elif state == 'settings':
         screen.fill((255,255,255))
         
@@ -521,9 +489,7 @@ while True:
         if back_button.draw():
             state = "main menu"    
         for event in pygame.event.get():
-            createTurret(turType, event)
-            checkQuit(event)
-            checkPause(event)        
+            checkQuit(event)       
         
     fpsClock.tick(fps)
     pygame.display.update()
