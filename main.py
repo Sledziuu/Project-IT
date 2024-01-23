@@ -160,7 +160,6 @@ def turretShoot():
     
     for i in range(0,len(turretList)):
         flagTMP = False
-        flagShoot = True
         xTur = turretList[i].pos[0]
         yTur = turretList[i].pos[1]
         for j in range(0, len(bloonQueue)): 
@@ -222,13 +221,14 @@ def drawPause():
     screen.blit(surface,(0,0))
 
 #To gowno nie dziala jak wstawiam do petli for event
-# def checkPause(event,pause):
-#     if event.type == pygame.KEYDOWN:
-#         if event.key == pygame.K_ESCAPE:
-#             if pause:
-#                 pause = False
-#             else:
-#                 pause = True
+def checkPause(event):
+    global pause
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_ESCAPE:
+            if pause:
+                pause = False
+            else:
+                pause = True
 
 def checkQuit(event):
     #checks if the quit button has been pressed
@@ -250,6 +250,7 @@ turretList = []
 screen = pygame.display.set_mode((screen_width, screen_height))
 #setup of this transparent screen which appears when pause is True
 surface = pygame.Surface((screen_width,screen_height),pygame.SRCALPHA)
+
 pygame.display.set_caption('Bloons TD 7')
 #pygame.display.set_icon(pygame.image.load("panda.png"))
 
@@ -271,7 +272,7 @@ path = [
 ]
 
 #setting the balloon queue for the game
-queue = "212112121222"
+queue = "22111111111"
 
 
 #load background image
@@ -288,6 +289,7 @@ play_img = pygame.image.load('./textures/play.gif').convert_alpha()
 exit_img = pygame.image.load('./textures/exit.gif').convert_alpha() 
 #state = "game"
 turType = 1
+
 #starting pause state
 pause = False
 
@@ -330,10 +332,16 @@ while True:
             bloonMove()
             drawTurrets(turType)
             turretShoot()
+
+        if pause == True:
+            drawPause()
+            screen.blit(pygame.image.load('pause.png'),(0,0))
+
         health()
         for event in pygame.event.get():
             createTurret(turType, event)
             checkQuit(event)
+            checkPause(event)
             #KURWA nie dziala jak zrobilem funkcje checkPause(event,pause) wiec wrzucam tak
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -341,18 +349,6 @@ while True:
                         pause = False
                     else:
                         pause = True
-    #Main manu                   
-    elif state == "main menu":
-        pygame.display.set_caption("Main menu")
-        screen.fill((202, 228, 241))
-        start_button.draw()   
-        if exit_button.draw():
-            pygame.quit()
-            sys.exit()
-        
-        for event in pygame.event.get():
-            createTurret(turType, event)
-            checkQuit(event)
         #Pause screen
         if pause == True:
             drawPause()
