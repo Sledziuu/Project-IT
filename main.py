@@ -1,5 +1,5 @@
 import pygame
-import sys
+import sys 
 from pygame.math import Vector2
 import math
 from math import sqrt
@@ -182,7 +182,7 @@ def turretShoot():
 
 
         #print(bloonQueue[turretList[i].target].pos[0]-turretList[i].pos[0], bloonQueue[turretList[i].target].pos[1]-turretList[i].pos[1])
-        #print(turretList[i].angle)
+       
 
 #health "bar" and game over screen
 def health():
@@ -277,8 +277,16 @@ queue = "212112121222"
 #load background image
 #background = pygame.image.load("background.png")
 
+#img = font.render(text, True, text_col)
+#screen.blit(img,(x, y))
+    
+#font = pygame.font.SysFont("Arial", 40)
+#text_col = (255, 255, 255)
 #starting game state
-state = "game"
+state = "main menu"
+play_img = pygame.image.load('./textures/play.gif').convert_alpha()
+exit_img = pygame.image.load('./textures/exit.gif').convert_alpha() 
+#state = "game"
 turType = 1
 #starting pause state
 pause = False
@@ -287,6 +295,30 @@ createQueue()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 #print(bloonQueue[0].rect.h, bloonQueue[0].rect.w)
 
+
+#button class
+class Button():
+    def __init__(self, x, y, image, scale):
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+        self.clicked = False
+    def draw(self):
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+        return action
+    
+start_button = Button(350, 50, play_img, 0.7 )
+exit_button = Button(320, 350, exit_img, 0.7 )
 #main loop
 while True:
     if state == 'game':
@@ -309,6 +341,18 @@ while True:
                         pause = False
                     else:
                         pause = True
+    #Main manu                   
+    elif state == "main menu":
+        pygame.display.set_caption("Main menu")
+        screen.fill((202, 228, 241))
+        start_button.draw()   
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        
+        for event in pygame.event.get():
+            createTurret(turType, event)
+            checkQuit(event)
         #Pause screen
         if pause == True:
             drawPause()
