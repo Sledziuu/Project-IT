@@ -212,10 +212,11 @@ def turretShoot():
 
 def showSideMenu():
     global turType
-    heart = pygame.image.load('./textures/tyskie.png')
+    heart = pygame.image.load('./textures/heart.png')
     heart_rect = heart.get_rect()
 
     screen.blit(pygame.image.load('./textures/hud.png'), (775, 0))
+
     for i in range(0, HPoints):
         heart_rect.center = (820 + i*50, 170)
         screen.blit(pygame.image.load('./textures/heart.png'), heart_rect)
@@ -325,7 +326,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 surface = pygame.Surface((screen_width,screen_height),pygame.SRCALPHA)
 
 #set window name and icon
-pygame.display.set_caption('Bloons TD 7')
+pygame.display.set_caption('Bloons TD 0.5')
 pygame.display.set_icon(pygame.image.load("./textures/balloon1.png"))
 
 
@@ -369,12 +370,11 @@ cost = {
 
 #load background image
 background = pygame.image.load("./textures/background.png")
+backgroundMM = pygame.image.load("./textures/backgroundMM.png")
 
 
 #starting game state
 state = "main menu"
-set_img = pygame.image.load('./textures/option.gif').convert_alpha()
-but_img = pygame.image.load('./textures/back.gif').convert_alpha()
 
 
 #global variables in control of gameplay
@@ -394,15 +394,21 @@ queueFlag = False
 #starting start flag state
 startFlag = True
 
-
-start_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
-exit_button = Button(320, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+#main menu buttons
+start_button = Button(500, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exit_button = Button(500, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+settings_button = Button(500, 185, pygame.image.load('./textures/option.gif').convert_alpha(), 0.7)
+#settings button
+back_button = Button(350, 350, pygame.image.load('./textures/back.gif').convert_alpha(), 0.7)
+#in game buttons
 turret1_button = Button(887, 270, pygame.image.load('./textures/turretButton1.png').convert_alpha(), 1 )
 turret2_button = Button(887, 350, pygame.image.load('./textures/turretButton2.png').convert_alpha(), 1 )
 turretCancel_button = Button(887, 430, pygame.image.load('./textures/turretButtonCancel.png').convert_alpha(), 1 )
+#win/lose buttons
+retry_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exitWL_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
 
-settings_button = Button(370, 185, set_img, 0.7)
-back_button = Button(350, 350, but_img, 0.7)
+
 
 #main loop
 while True:
@@ -440,7 +446,7 @@ while True:
 
 
     elif state == 'main menu':
-        screen.fill((202, 228, 241))
+        screen.blit(backgroundMM, (0,0))
             
         if start_button.draw():
             state = "game"
@@ -466,24 +472,21 @@ while True:
             checkQuit(event)
     
     elif state == 'win':
-        screen.fill((202, 228, 241))
-            
+        screen.blit(background, (0,0))
+        screen.blit(pygame.image.load(('./textures/congratulations.png')), (132,150))
+        showSideMenu()
         if start_button.draw():
             state = "game"
             restart()
         if exit_button.draw():
             pygame.quit()
             sys.exit()
+        
         for event in pygame.event.get():
             checkQuit(event)
-            checkPause(event)
-        #Pause screen
-        if pause == True:
-            drawPause()
-            screen.blit(pygame.image.load('pause.png'),(0,0))
             
     elif state == 'settings':
-        screen.fill((255,255,255))
+        screen.blit(backgroundMM, (0,0))
         
         
         if back_button.draw():
