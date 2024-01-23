@@ -407,9 +407,15 @@ background = pygame.image.load("./textures/background.png")
 
 #starting game state
 state = "main menu"
-play_img = pygame.image.load('./textures/play.gif').convert_alpha()
-exit_img = pygame.image.load('./textures/exit.gif').convert_alpha() 
+play_img = pygame.image.load('./textures/play.png').convert_alpha()
+set_img = pygame.image.load('./textures/option.gif').convert_alpha()
+exit_img = pygame.image.load('./textures/exit.png').convert_alpha()
+but_img = pygame.image.load('./textures/back.gif').convert_alpha()
 #state = "game"
+
+#global variables in control of gameplay
+HPoints = 3
+money = 100
 turType = 1
 wave = 1
 level = 1
@@ -419,9 +425,17 @@ level = 1
 #starting pause state
 pause = False
 
-createQueue()
-pygame.time.set_timer(pygame.USEREVENT, 1000)
-#print(bloonQueue[0].rect.h, bloonQueue[0].rect.w)
+#starting queue flag state
+queueFlag = False
+
+#starting start flag state
+startFlag = True
+
+
+start_button = Button(350, 50, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exit_button = Button(320, 350, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+turret1_button = Button(810, 250, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
+turret2_button = Button(810, 300, pygame.image.load('./textures/exit.png').convert_alpha(), 0.2 )
 
 
 #button class
@@ -446,7 +460,9 @@ class Button():
         return action
     
 start_button = Button(350, 50, play_img, 0.7 )
+settings_button = Button(370, 185, set_img, 0.7)
 exit_button = Button(320, 350, exit_img, 0.7 )
+back_button = Button(350, 350, but_img, 0.7)
 #main loop
 while True:
 
@@ -481,11 +497,40 @@ while True:
                         pause = False
                     else:
                         pause = True
-    if state == 'main menu':
+
+
+    elif state == 'main menu':
         screen.fill((202, 228, 241))
             
         if start_button.draw():
             state = "game"
+        if settings_button.draw():
+            state = 'settings'
+            restart()
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        for event in pygame.event.get():
+            checkQuit(event)
+
+    elif state == 'game over':
+        screen.fill((202, 228, 241))
+            
+        if start_button.draw():
+            state = "game"
+            restart()
+        if exit_button.draw():
+            pygame.quit()
+            sys.exit()
+        for event in pygame.event.get():
+            checkQuit(event)
+    
+    elif state == 'win':
+        screen.fill((202, 228, 241))
+            
+        if start_button.draw():
+            state = "game"
+            restart()
         if exit_button.draw():
             pygame.quit()
             sys.exit()
@@ -496,6 +541,17 @@ while True:
         if pause == True:
             drawPause()
             screen.blit(pygame.image.load('pause.png'),(0,0))
+    elif state == 'settings':
+        screen.fill((255,255,255))
+        
+        
+        if back_button.draw():
+            state = "main menu"    
+        for event in pygame.event.get():
+            createTurret(turType, event)
+            checkQuit(event)
+            checkPause(event)        
+        
     fpsClock.tick(fps)
     pygame.display.update()
     
