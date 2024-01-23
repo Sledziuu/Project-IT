@@ -286,7 +286,9 @@ queue = "22111111111"
 #starting game state
 state = "main menu"
 play_img = pygame.image.load('./textures/play.gif').convert_alpha()
-exit_img = pygame.image.load('./textures/exit.gif').convert_alpha() 
+set_img = pygame.image.load('./textures/option.gif').convert_alpha()
+exit_img = pygame.image.load('./textures/exit.gif').convert_alpha()
+but_img = pygame.image.load('./textures/back.gif').convert_alpha()
 #state = "game"
 turType = 1
 
@@ -320,7 +322,9 @@ class Button():
         return action
     
 start_button = Button(350, 50, play_img, 0.7 )
+settings_button = Button(370, 185, set_img, 0.7)
 exit_button = Button(320, 350, exit_img, 0.7 )
+back_button = Button(350, 350, but_img, 0.7)
 #main loop
 while True:
     if state == 'game':
@@ -349,11 +353,13 @@ while True:
                         pause = False
                     else:
                         pause = True
-    if state == 'main menu':
+    elif state == 'main menu':
         screen.fill((202, 228, 241))
             
         if start_button.draw():
             state = "game"
+        if settings_button.draw():
+            state = 'settings'
         if exit_button.draw():
             pygame.quit()
             sys.exit()
@@ -365,6 +371,17 @@ while True:
         if pause == True:
             drawPause()
             screen.blit(pygame.image.load('pause.png'),(0,0))
+    elif state == 'settings':
+        screen.fill((255,255,255))
+        
+        
+        if back_button.draw():
+            state = "main menu"    
+        for event in pygame.event.get():
+            createTurret(turType, event)
+            checkQuit(event)
+            checkPause(event)        
+        
     fpsClock.tick(fps)
     pygame.display.update()
     
