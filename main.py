@@ -296,7 +296,7 @@ def checkDefeat():
 
     if HPoints <= 0:
         queueFlag = False
-        state = 'main menu'
+        state = 'game over'
 
 def drawPause():
     pygame.draw.rect(surface,(128,128,128,150),[0,0,1000,500])
@@ -373,7 +373,7 @@ path = {
 #setting the balloon queues for the game levels and waves
 queueDict = {
     1:{
-        1:"221111",
+        1:"2221111",
         2:"322211"
     },
     2:{
