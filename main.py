@@ -11,25 +11,25 @@ class Bloon:
     def __init__(self, type):
         self.type = type
         if type == 1:
-            self.health = 10
+            self.health = 5
             self.speed = 2
-            self.prize = 10
+            self.prize = 5
             self.sprite = pygame.image.load("./textures/balloon1.png")
         elif type == 2:
-            self.health = 5
+            self.health = 7
             self.speed = 4
-            self.prize = 15
+            self.prize = 10
             self.sprite = pygame.image.load("./textures/balloon2.png")
         elif type == 3:
-            self.health = 20
+            self.health = 30
             self.speed = 1
             self.prize = 30
             self.sprite = pygame.image.load("./textures/balloon3.png")
         else:
             # Default values if type is not 1, 2, or 3
-            self.health = 10
+            self.health = 0
             self.speed = 2
-            self.prize = 10
+            self.prize = 0
             self.sprite = pygame.image.load("./textures/balloon1.png")
 
         self.rect = self.sprite.get_rect()
@@ -45,8 +45,8 @@ class Turret:
             self.speed = 1
             self.sprite = pygame.image.load("./textures/turret1.png")
         elif type == 2:
-            self.damage = 5
-            self.speed = 0.5
+            self.damage = 2
+            self.speed = 0.7
             self.sprite = pygame.image.load("./textures/turret2.png")
         else:
             # Default values if type is not 1, 2, or 3
@@ -70,16 +70,19 @@ class Button:
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.clicked = False
+
     def draw(self):
         action = False
         pos = pygame.mouse.get_pos()
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+        
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 self.clicked = True
                 action = True
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
-        screen.blit(self.image, (self.rect.x, self.rect.y))
+        
         return action
 
 def createQueue():
@@ -373,8 +376,10 @@ path = {
 #setting the balloon queues for the game levels and waves
 queueDict = {
     1:{
-        1:"2221111",
-        2:"322211"
+        1:"11101110111",
+        2:"2211111122",
+        3:"322221111011110111101111",
+        4:"22111311131111111111"
     },
     2:{
         1:"121212111111",
@@ -423,19 +428,20 @@ queueFlag = False
 startFlag = True
 
 #main menu buttons
-start_button = Button(500, 200, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
-exit_button = Button(500, 400, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
-settings_button = Button(500, 300, pygame.image.load('./textures/option.gif').convert_alpha(), 0.7)
+start_button = Button(500, 220, pygame.image.load('./textures/play.png').convert_alpha(), 0.7 )
+exit_button = Button(500, 380, pygame.image.load('./textures/exit.png').convert_alpha(), 0.7 )
+settings_button = Button(500, 300, pygame.image.load('./textures/settings.png').convert_alpha(), 0.7)
 #settings button
-back_button = Button(350, 350, pygame.image.load('./textures/back.gif').convert_alpha(), 0.7)
-mute_button = Button(500, 350, pygame.image.load('./textures/play.png').convert_alpha(), 0.7)
+back_button = Button(350, 450, pygame.image.load('./textures/back.png').convert_alpha(), 0.7)
+mute_button = Button(500, 200, pygame.image.load('./textures/mute.png').convert_alpha(), 0.7)
+check = pygame.image.load('./textures/mark.png')
 #in game buttons
 turret1_button = Button(887, 270, pygame.image.load('./textures/turretButton1.png').convert_alpha(), 1 )
 turret2_button = Button(887, 350, pygame.image.load('./textures/turretButton2.png').convert_alpha(), 1 )
 turretCancel_button = Button(887, 430, pygame.image.load('./textures/turretButtonCancel.png').convert_alpha(), 1 )
 #win/lose buttons
-retry_button = Button(250, 300, pygame.image.load('./textures/retry.png').convert_alpha(), 1 )
-exitWL_button = Button(500, 300, pygame.image.load('./textures/BackMainMenu.png').convert_alpha(), 1 )
+retry_button = Button(350, 300, pygame.image.load('./textures/retry.png').convert_alpha(), 1 )
+exitWL_button = Button(600, 300, pygame.image.load('./textures/BackMainMenu.png').convert_alpha(), 1 )
 
 pygame.mixer.music.load("./sounds/background.mp3") 
 pygame.mixer.music.play(-1,0.0)
@@ -482,7 +488,7 @@ while True:
 
     elif state == 'game over':
         screen.blit(background, (0,0))
-        screen.blit(pygame.image.load(('./textures/lose.png')), (132,150))
+        screen.blit(pygame.image.load(('./textures/lose.png')), (232,150))
         showSideMenu()
         if retry_button.draw():
             state = "game"
@@ -495,7 +501,7 @@ while True:
     
     elif state == 'win':
         screen.blit(background, (0,0))
-        screen.blit(pygame.image.load(('./textures/congratulations.png')), (132,150))
+        screen.blit(pygame.image.load(('./textures/congratulations.png')), (232,150))
         showSideMenu()
         if retry_button.draw():
             state = "game"
@@ -510,8 +516,11 @@ while True:
         screen.blit(backgroundMM, (0,0))
         if mute_button.draw():
             mute = not mute
+            
         if mute == True:
             pygame.mixer.music.pause()
+            screen.blit(check, (330,150))
+
         else: 
             pygame.mixer.music.unpause()
         if back_button.draw():
